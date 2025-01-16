@@ -5,10 +5,17 @@ import { ArtistModule } from 'src/artist/artist.module';
 import { AlbumModule } from 'src/album/album.module';
 import { TrackModule } from 'src/track/track.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { LoggingModule } from 'src/logging/logging.module';
 
 @Module({
   controllers: [FavoritesController],
   providers: [FavoritesService],
-  imports: [ArtistModule, AlbumModule, TrackModule, PrismaModule],
+  imports: [
+    ArtistModule,
+    AlbumModule,
+    TrackModule,
+    PrismaModule,
+    LoggingModule,
+  ],
 })
 export class FavoritesModule {}
