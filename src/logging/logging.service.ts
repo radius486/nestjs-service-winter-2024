@@ -1,5 +1,6 @@
 import { Injectable, ConsoleLogger, Scope, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { ResponseBody } from 'src/common/exception-filters/common-exception.filter';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LoggingService extends ConsoleLogger {
@@ -24,9 +25,15 @@ export class LoggingService extends ConsoleLogger {
         statusCode === HttpStatus.NO_CONTENT
       ) {
         this.log(
-          `[LoggingService] ${method} ${url}${bodyString}${queryString} ${statusCode} ${timeString}`,
+          `[LoggingService] ${method}: ${url}${bodyString}${queryString} ${statusCode} ${timeString}`,
         );
       }
     });
+  }
+
+  logError(responseBody: ResponseBody) {
+    const { method, statusCode, path } = responseBody;
+
+    this.error(`[LoggingService] ${method}: ${path} ${statusCode}`);
   }
 }

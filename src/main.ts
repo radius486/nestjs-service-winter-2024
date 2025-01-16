@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { CommonExceptionFilter } from './common/exception-filters/common-exception.filter';
+import { LoggingService } from './logging/logging.service';
 
 declare global {
   interface BigInt {
@@ -32,7 +33,9 @@ async function bootstrap() {
   SwaggerModule.setup('/api/docs', app, document);
 
   app.useGlobalPipes(new ValidationPipe({}));
-  app.useGlobalFilters(new CommonExceptionFilter(httpAdapter));
+  app.useGlobalFilters(
+    new CommonExceptionFilter(httpAdapter, new LoggingService()),
+  );
 
   await app.listen(PORT, () => console.log('Server started on port:', PORT));
 }
