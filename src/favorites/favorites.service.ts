@@ -5,6 +5,7 @@ import { Track, TrackService } from 'src/track/track.service';
 import { ErrorMessages } from 'src/common/constants/error-messages';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PRISMA_ERROR_CODES } from 'src/common/constants/prisma-codes';
+import { INSTANCE_TYPES } from 'src/common/constants/common';
 
 export type Favorites = {
   artists: string[];
@@ -22,17 +23,17 @@ export class FavoritesService {
   ) {}
 
   async getAllFavorites() {
-    const albumResponse = await this.prisma.favoriteAlbums.findMany({
-      select: { album: true },
-    });
-
-    const artistResponse = await this.prisma.favoriteArtists.findMany({
-      select: { artist: true },
-    });
-
-    const trackResponse = await this.prisma.favoriteTracks.findMany({
-      select: { track: true },
-    });
+    const [albumResponse, artistResponse, trackResponse] = await Promise.all([
+      this.prisma.favoriteAlbums.findMany({
+        select: { album: true },
+      }),
+      this.prisma.favoriteArtists.findMany({
+        select: { artist: true },
+      }),
+      this.prisma.favoriteTracks.findMany({
+        select: { track: true },
+      }),
+    ]);
 
     const albums = albumResponse.map((instance) => instance.album);
     const artists = artistResponse.map((instance) => instance.artist);
@@ -41,25 +42,33 @@ export class FavoritesService {
     return { albums, artists, tracks };
   }
 
-  async addTrackToFavorites(id: string) {
-    let track: Track;
-
+  async addInstanceToFavorites(instanceType: INSTANCE_TYPES, id: string) {
     try {
-      track = await this.trackService.getTrackById(id);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      switch (instanceType) {
+        case INSTANCE_TYPES.TRACK:
+          const track: Track = await this.trackService.getTrackById(id);
+          await this.prisma.favoriteTracks.create({ data: { trackId: id } });
+          return track;
+        case INSTANCE_TYPES.ALBUM:
+          const album: Album = await this.albumService.getAlbumById(id);
+          await this.prisma.favoriteAlbums.create({ data: { albumId: id } });
+          return album;
+        case INSTANCE_TYPES.ARTIST:
+          const artist: Artist = await this.artistService.getArtistById(id);
+          await this.prisma.favoriteArtists.create({ data: { artistId: id } });
+          return artist;
+        default:
+          throw new Error();
+      }
     } catch (error) {
-      throw new HttpException(
-        ErrorMessages.recordDoestExist,
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-
-    try {
-      await this.prisma.favoriteTracks.create({ data: { trackId: id } });
-    } catch (error) {
-      if (error.code === PRISMA_ERROR_CODES.UNIQUE_CONSTRAINT_FAILED) {
+      if (error.status === HttpStatus.NOT_FOUND) {
         throw new HttpException(
-          `track ${ErrorMessages.isAlreadyInFavorites}`,
+          ErrorMessages.recordDoestExist,
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      } else if (error.code === PRISMA_ERROR_CODES.UNIQUE_CONSTRAINT_FAILED) {
+        throw new HttpException(
+          `${instanceType} ${ErrorMessages.isAlreadyInFavorites}`,
           HttpStatus.CONFLICT,
         );
       } else {
@@ -69,117 +78,27 @@ export class FavoritesService {
         );
       }
     }
-
-    return track;
   }
 
-  async removeTrackFromFavorites(id: string) {
+  async removeInstanceFromFavorites(instanceType: INSTANCE_TYPES, id: string) {
     try {
-      await this.prisma.favoriteTracks.delete({ where: { trackId: id } });
+      switch (instanceType) {
+        case INSTANCE_TYPES.TRACK:
+          await this.prisma.favoriteTracks.delete({ where: { trackId: id } });
+          break;
+        case INSTANCE_TYPES.ALBUM:
+          await this.prisma.favoriteAlbums.delete({ where: { albumId: id } });
+          break;
+        case INSTANCE_TYPES.ARTIST:
+          await this.prisma.favoriteArtists.delete({ where: { artistId: id } });
+          break;
+        default:
+          throw new Error();
+      }
     } catch (error) {
       if (error.code === PRISMA_ERROR_CODES.RECORD_NOT_FOUND) {
         throw new HttpException(
-          `track ${ErrorMessages.notFoundInFavorites}`,
-          HttpStatus.NOT_FOUND,
-        );
-      } else {
-        throw new HttpException(
-          ErrorMessages.somethingWentWrong,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-  }
-
-  async addAlbumToFavorites(id: string) {
-    let album: Album;
-
-    try {
-      album = await this.albumService.getAlbumById(id);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      throw new HttpException(
-        ErrorMessages.recordDoestExist,
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-
-    try {
-      await this.prisma.favoriteAlbums.create({ data: { albumId: id } });
-    } catch (error) {
-      if (error.code === PRISMA_ERROR_CODES.UNIQUE_CONSTRAINT_FAILED) {
-        throw new HttpException(
-          `album ${ErrorMessages.isAlreadyInFavorites}`,
-          HttpStatus.CONFLICT,
-        );
-      } else {
-        throw new HttpException(
-          ErrorMessages.somethingWentWrong,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-
-    return album;
-  }
-
-  async removeAlbumFromFavorites(id: string) {
-    try {
-      await this.prisma.favoriteAlbums.delete({ where: { albumId: id } });
-    } catch (error) {
-      if (error.code === PRISMA_ERROR_CODES.RECORD_NOT_FOUND) {
-        throw new HttpException(
-          `album ${ErrorMessages.notFoundInFavorites}`,
-          HttpStatus.NOT_FOUND,
-        );
-      } else {
-        throw new HttpException(
-          ErrorMessages.somethingWentWrong,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-  }
-
-  async addArtistToFavorites(id: string) {
-    let artist: Artist;
-
-    try {
-      artist = await this.artistService.getArtistById(id);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      throw new HttpException(
-        ErrorMessages.recordDoestExist,
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-
-    try {
-      await this.prisma.favoriteArtists.create({ data: { artistId: id } });
-    } catch (error) {
-      if (error.code === PRISMA_ERROR_CODES.UNIQUE_CONSTRAINT_FAILED) {
-        throw new HttpException(
-          `artist ${ErrorMessages.isAlreadyInFavorites}`,
-          HttpStatus.CONFLICT,
-        );
-      } else {
-        throw new HttpException(
-          ErrorMessages.somethingWentWrong,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-    }
-
-    return artist;
-  }
-
-  async removeArtistFromFavorites(id: string) {
-    try {
-      await this.prisma.favoriteArtists.delete({ where: { artistId: id } });
-    } catch (error) {
-      if (error.code === PRISMA_ERROR_CODES.RECORD_NOT_FOUND) {
-        throw new HttpException(
-          `artist ${ErrorMessages.notFoundInFavorites}`,
+          `${instanceType} ${ErrorMessages.notFoundInFavorites}`,
           HttpStatus.NOT_FOUND,
         );
       } else {

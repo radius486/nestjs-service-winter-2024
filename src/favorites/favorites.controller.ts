@@ -17,6 +17,7 @@ import {
   trackExample,
 } from 'src/common/examples/open-api-examples';
 import { UUIDParam } from 'src/common/helpers/decorators';
+import { INSTANCE_TYPES } from 'src/common/constants/common';
 
 @ApiTags('Favorites')
 @Controller('favs')
@@ -35,7 +36,10 @@ export class FavoritesController {
   @ApiResponse({ status: HttpStatus.CREATED, example: trackExample })
   @Post('/track/:id')
   addTrackToFavorites(@UUIDParam('id') id: string) {
-    return this.favoritesService.addTrackToFavorites(id);
+    return this.favoritesService.addInstanceToFavorites(
+      INSTANCE_TYPES.TRACK,
+      id,
+    );
   }
 
   @ApiOperation({ summary: 'Remove track from favorites by id' })
@@ -44,7 +48,10 @@ export class FavoritesController {
   @Delete('/track/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   removeTrackFromFavorites(@UUIDParam('id') id: string) {
-    return this.favoritesService.removeTrackFromFavorites(id);
+    return this.favoritesService.removeInstanceFromFavorites(
+      INSTANCE_TYPES.TRACK,
+      id,
+    );
   }
 
   @ApiOperation({ summary: 'Add album to favorites by id' })
@@ -52,7 +59,10 @@ export class FavoritesController {
   @ApiResponse({ status: HttpStatus.CREATED, example: albumExample })
   @Post('/album/:id')
   addAlbumToFavorites(@UUIDParam('id') id: string) {
-    return this.favoritesService.addAlbumToFavorites(id);
+    return this.favoritesService.addInstanceToFavorites(
+      INSTANCE_TYPES.ALBUM,
+      id,
+    );
   }
 
   @ApiOperation({ summary: 'Remove album from favorites by id' })
@@ -61,7 +71,10 @@ export class FavoritesController {
   @Delete('/album/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   removeAlbumFromFavorites(@UUIDParam('id') id: string) {
-    return this.favoritesService.removeAlbumFromFavorites(id);
+    return this.favoritesService.removeInstanceFromFavorites(
+      INSTANCE_TYPES.ALBUM,
+      id,
+    );
   }
 
   @ApiOperation({ summary: 'Add artist to favorites by id' })
@@ -69,7 +82,10 @@ export class FavoritesController {
   @ApiResponse({ status: HttpStatus.CREATED, example: artistExample })
   @Post('/artist/:id')
   addArtistToFavorites(@UUIDParam('id') id: string) {
-    return this.favoritesService.addArtistToFavorites(id);
+    return this.favoritesService.addInstanceToFavorites(
+      INSTANCE_TYPES.ARTIST,
+      id,
+    );
   }
 
   @ApiOperation({ summary: 'Remove artist from favorites by id' })
@@ -78,6 +94,9 @@ export class FavoritesController {
   @Delete('/artist/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   removeArtistFromFavorites(@UUIDParam('id') id: string) {
-    return this.favoritesService.removeArtistFromFavorites(id);
+    return this.favoritesService.removeInstanceFromFavorites(
+      INSTANCE_TYPES.ARTIST,
+      id,
+    );
   }
 }
