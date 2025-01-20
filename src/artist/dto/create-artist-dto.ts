@@ -11,6 +11,7 @@ export class CreateArtistDto {
   @IsNotEmpty({ message: `name ${ErrorMessages.shouldNotBeEmpty}` })
   @IsString({ message: `name ${ErrorMessages.shouldBeString}` })
   readonly name: string;
+
   @ApiProperty({
     example: true,
     description: 'Artist has grammy',

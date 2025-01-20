@@ -39,7 +39,9 @@ export class CommonExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       const response: any = exception.getResponse();
 
-      message = response.message.join(', ');
+      message = Array.isArray(response.message)
+        ? response.message.join(', ')
+        : exception.message;
     }
 
     const responseBody: ResponseBody = {
