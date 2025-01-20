@@ -10,4 +10,5 @@ export const enum ErrorMessages {
   notFoundInFavorites = 'not fount in favorites',
   userAlreadyExists = 'user with such login already exists',
   somethingWentWrong = 'something went wrong',
+  lengthFrom4To16 = 'should be from 4 to 16 characters',
 }

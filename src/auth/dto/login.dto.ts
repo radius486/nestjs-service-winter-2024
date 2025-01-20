@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, Length } from 'class-validator';
 import { ErrorMessages } from 'src/common/constants/error-messages';
 
-export class CreateUserDto {
+export class LoginDto {
   @ApiProperty({ example: 'user_4', description: 'User login' })
   @IsNotEmpty({ message: `login ${ErrorMessages.shouldNotBeEmpty}` })
   @IsString({ message: `login ${ErrorMessages.shouldBeString}` })

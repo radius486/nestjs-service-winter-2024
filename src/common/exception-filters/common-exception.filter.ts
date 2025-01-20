@@ -34,10 +34,13 @@ export class CommonExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message =
-      exception instanceof HttpException
-        ? exception.message
-        : ErrorMessages.somethingWentWrong;
+    let message: string = ErrorMessages.somethingWentWrong;
+
+    if (exception instanceof HttpException) {
+      const response: any = exception.getResponse();
+
+      message = response.message.join(', ');
+    }
 
     const responseBody: ResponseBody = {
       error: true,
