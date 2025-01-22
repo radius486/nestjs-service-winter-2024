@@ -11,4 +11,5 @@ export const enum ErrorMessages {
   userAlreadyExists = 'user with such login already exists',
   somethingWentWrong = 'something went wrong',
   lengthFrom4To16 = 'should be from 4 to 16 characters',
+  passwordsDoNotMatch = 'passwords do not match',
 }
