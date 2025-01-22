@@ -4,6 +4,7 @@ import { UpdatePasswordDto } from './dto/update-password-dto';
 import * as uuid from 'uuid';
 import { ErrorMessages } from 'src/common/constants/error-messages';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 export type User = {
   id: string;
@@ -40,6 +41,24 @@ export class UserService {
     return user;
   }
 
+  async getUserByLogin(login: string, withPass = false): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { login },
+      omit: {
+        password: !withPass,
+      },
+    });
+
+    if (!user) {
+      throw new HttpException(
+        ErrorMessages.recordDoestExist,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return user;
+  }
+
   async createUser(dto: CreateUserDto) {
     const existedUser = await this.prisma.user.findUnique({
       where: { login: dto.login },
@@ -52,10 +71,12 @@ export class UserService {
       );
     }
 
+    const hashPassword = await bcrypt.hash(dto.password, 5);
+
     const data = {
       id: uuid.v4(),
       login: dto.login,
-      password: dto.password,
+      password: hashPassword,
       version: 1,
       createdAt: new Date().getTime(),
       updatedAt: new Date().getTime(),
@@ -67,17 +88,24 @@ export class UserService {
   async updateUserPassword(id: string, dto: UpdatePasswordDto) {
     const user = await this.getUserById(id, true);
 
-    if (user.password !== dto.oldPassword) {
+    const passwordEquals = await bcrypt.compare(
+      dto.oldPassword,
+      user.password,
+    );
+
+    if (!passwordEquals) {
       throw new HttpException(
         ErrorMessages.oldPasswordIsWrong,
         HttpStatus.FORBIDDEN,
       );
     }
 
+    const hashPassword = await bcrypt.hash(dto.newPassword, 5);
+
     return await this.prisma.user.update({
       where: { id },
       data: {
-        password: dto.newPassword,
+        password: hashPassword,
         version: ++user.version,
         updatedAt: new Date().getTime(),
       },
