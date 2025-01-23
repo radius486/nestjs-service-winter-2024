@@ -7,6 +7,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -14,7 +15,7 @@ import { CreateUserDto } from './dto/create-user-dto';
 import { UpdatePasswordDto } from './dto/update-password-dto';
 import { UserService } from './user.service';
 import { userExample } from 'src/common/examples/open-api-examples';
-import { UUIDParam } from 'src/common/helpers/decorators';
+import { UUIDParam } from 'src/common/decorators/uuid.decorators';
 
 @ApiTags('Users')
 @Controller('user')

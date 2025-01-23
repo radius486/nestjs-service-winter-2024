@@ -16,7 +16,7 @@ import {
   favoritesExample,
   trackExample,
 } from 'src/common/examples/open-api-examples';
-import { UUIDParam } from 'src/common/helpers/decorators';
+import { UUIDParam } from 'src/common/decorators/uuid.decorators';
 import { INSTANCE_TYPES } from 'src/common/constants/common';
 
 @ApiTags('Favorites')

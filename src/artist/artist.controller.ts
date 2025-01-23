@@ -20,7 +20,7 @@ import {
 import { ArtistService } from './artist.service';
 import { CreateArtistDto } from './dto/create-artist-dto';
 import { artistExample } from 'src/common/examples/open-api-examples';
-import { UUIDParam } from 'src/common/helpers/decorators';
+import { UUIDParam } from 'src/common/decorators/uuid.decorators';
 
 @ApiTags('Artists')
 @Controller('artist')
