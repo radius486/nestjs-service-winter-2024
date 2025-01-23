@@ -11,6 +11,6 @@ export class LoginDto {
   @ApiProperty({ example: 'qwerty123', description: 'User password' })
   @IsNotEmpty({ message: `password ${ErrorMessages.shouldNotBeEmpty}` })
   @IsString({ message: `password ${ErrorMessages.shouldBeString}` })
-  @Length(4, 16, { message: ErrorMessages.lengthFrom4To16 })
+  @Length(4, 16, { message: `password ${ErrorMessages.lengthFrom4To16}` })
   readonly password: string;
 }

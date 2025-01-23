@@ -1,10 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/user/user.service';
+import { User, UserService } from 'src/user/user.service';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
 import { ErrorMessages } from 'src/common/constants/error-messages';
 import * as bcrypt from 'bcrypt';
+import { InfoMessages } from 'src/common/constants/info-messages';
 
 @Injectable()
 export class AuthService {
@@ -16,16 +17,23 @@ export class AuthService {
   async login(userDto: LoginDto) {
     const user = await this.validateUser(userDto);
 
-    return user;
+    return await this.generateToken(user);
   }
 
   async signup(userDto: SignupDto) {
     const { login, password } = userDto;
 
-    return await this.usersService.createUser({
+    const user = await this.usersService.createUser({
       login,
       password,
     });
+
+    const token = await this.generateToken(user as User);
+
+    return {
+      message: InfoMessages.userHasBeenSuccessfullyCreated,
+      ...token,
+    };
   }
 
   private async validateUser(userDto: LoginDto) {
@@ -45,8 +53,16 @@ export class AuthService {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new UnauthorizedException({
-        message: ErrorMessages.EmailOrPasswordIsIncorrect,
+        message: ErrorMessages.LoginOrPasswordIsIncorrect,
       });
     }
+  }
+
+  private async generateToken(user: User) {
+    const payload = { login: user.login, userId: user.id };
+
+    return {
+      token: this.jwtService.sign(payload),
+    };
   }
 }

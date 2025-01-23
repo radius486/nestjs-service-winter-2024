@@ -12,13 +12,18 @@ export class SignupDto {
   @ApiProperty({ example: 'qwerty123', description: 'User password' })
   @IsNotEmpty({ message: `password ${ErrorMessages.shouldNotBeEmpty}` })
   @IsString({ message: `password ${ErrorMessages.shouldBeString}` })
-  @Length(4, 16, { message: ErrorMessages.lengthFrom4To16 })
+  @Length(4, 16, { message: `password ${ErrorMessages.lengthFrom4To16}` })
   readonly password: string;
 
-  @ApiProperty({ example: 'qwerty123', description: 'User password' })
-  @IsNotEmpty({ message: `password ${ErrorMessages.shouldNotBeEmpty}` })
-  @IsString({ message: `password ${ErrorMessages.shouldBeString}` })
-  @Length(4, 16, { message: ErrorMessages.lengthFrom4To16 })
+  @ApiProperty({
+    example: 'qwerty123',
+    description: 'User password confirmation',
+  })
+  @IsNotEmpty({ message: `confirm password ${ErrorMessages.shouldNotBeEmpty}` })
+  @IsString({ message: `confirm password ${ErrorMessages.shouldBeString}` })
+  @Length(4, 16, {
+    message: `confirm password ${ErrorMessages.lengthFrom4To16}`,
+  })
   @Match('password', { message: ErrorMessages.passwordsDoNotMatch })
   readonly passwordConfirmation: string;
 }
