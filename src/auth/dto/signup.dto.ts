@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, Length } from 'class-validator';
 import { ErrorMessages } from 'src/common/constants/error-messages';
-import { Match } from 'src/common/decorators/march.decorator';
+import { Match } from 'src/common/decorators/match.decorator';
 
 export class SignupDto {
   @ApiProperty({ example: 'user_4', description: 'User login' })

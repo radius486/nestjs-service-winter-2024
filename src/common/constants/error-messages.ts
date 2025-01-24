@@ -13,4 +13,6 @@ export const enum ErrorMessages {
   lengthFrom4To16 = 'should be from 4 to 16 characters',
   passwordsDoNotMatch = 'passwords do not match',
   LoginOrPasswordIsIncorrect = 'Login or password is incorrect',
+  shouldBeAValidJWT = 'should be a valid JWT token',
+  tokenIsInvalidOrExpired = 'token is invalid or expired',
 }
