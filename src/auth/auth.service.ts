@@ -34,11 +34,12 @@ export class AuthService {
       password,
     });
 
-    const token = await this.generateToken(user as User);
+    const accessToken = await this.generateToken(user as User);
 
     return {
       message: InfoMessages.userHasBeenSuccessfullyCreated,
-      ...token,
+      id: user.id,
+      ...accessToken,
     };
   }
 
@@ -68,7 +69,7 @@ export class AuthService {
     const payload = { login: user.login, userId: user.id };
 
     return {
-      token: await this.jwtService.signAsync(payload),
+      accessToken: await this.jwtService.signAsync(payload),
     };
   }
 
