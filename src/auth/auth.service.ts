@@ -11,6 +11,7 @@ import { ErrorMessages } from 'src/common/constants/error-messages';
 import * as bcrypt from 'bcrypt';
 import { InfoMessages } from 'src/common/constants/info-messages';
 import { RefreshDto } from './dto/refresh.dto';
+import { JWT_ERROR_NAMES } from 'src/common/constants/common';
 
 @Injectable()
 export class AuthService {
@@ -92,8 +93,8 @@ export class AuthService {
       }
     } catch (error) {
       if (
-        error.name === 'TokenExpiredError' ||
-        error.name === 'JsonWebTokenError'
+        error.name === JWT_ERROR_NAMES.TOKEN_EXPIRED_ERROR ||
+        error.name === JWT_ERROR_NAMES.JSON_WEB_TOKEN_ERROR
       ) {
         throw new ForbiddenException({
           message: ErrorMessages.tokenIsInvalidOrExpired,
