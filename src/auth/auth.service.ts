@@ -100,10 +100,19 @@ export class AuthService {
         };
       }
     } catch (error) {
-      if (
-        error.name === JWT_ERROR_NAMES.TOKEN_EXPIRED_ERROR ||
-        error.name === JWT_ERROR_NAMES.JSON_WEB_TOKEN_ERROR
-      ) {
+      if (!refreshDto.refreshToken) {
+        throw new UnauthorizedException({
+          message: ErrorMessages.tokenIsInvalidOrExpired,
+        });
+      }
+
+      if (error.name === JWT_ERROR_NAMES.JSON_WEB_TOKEN_ERROR) {
+        throw new ForbiddenException({
+          message: ErrorMessages.tokenIsInvalidOrExpired,
+        });
+      }
+
+      if (error.name === JWT_ERROR_NAMES.TOKEN_EXPIRED_ERROR) {
         throw new ForbiddenException({
           message: ErrorMessages.tokenIsInvalidOrExpired,
         });
