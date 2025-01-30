@@ -11,7 +11,10 @@ import { ErrorMessages } from 'src/common/constants/error-messages';
 import * as bcrypt from 'bcrypt';
 import { InfoMessages } from 'src/common/constants/info-messages';
 import { RefreshDto } from './dto/refresh.dto';
-import { JWT_ERROR_NAMES } from 'src/common/constants/common';
+import {
+  JWT_ERROR_NAMES,
+  REFRESH_TOKEN_DELAY,
+} from 'src/common/constants/common';
 
 @Injectable()
 export class AuthService {
@@ -22,8 +25,10 @@ export class AuthService {
 
   async login(userDto: LoginDto) {
     const user = await this.validateUser(userDto);
+    const refreshToken = await this.generateToken(user);
+    const accessToken = await this.generateToken(user);
 
-    return this.generateToken(user);
+    return { accessToken, refreshToken };
   }
 
   async signup(userDto: SignupDto) {
@@ -39,7 +44,7 @@ export class AuthService {
     return {
       message: InfoMessages.userHasBeenSuccessfullyCreated,
       id: user.id,
-      ...accessToken,
+      accessToken,
     };
   }
 
@@ -68,18 +73,13 @@ export class AuthService {
   private async generateToken(user: User) {
     const payload = { login: user.login, userId: user.id };
 
-    return {
-      accessToken: await this.jwtService.signAsync(payload),
-    };
+    return await this.jwtService.signAsync(payload);
   }
 
   async refresh(refreshDto: RefreshDto) {
     try {
       const payload = await this.jwtService.verifyAsync(
         refreshDto.refreshToken,
-        {
-          secret: process.env.PRIVATE_KEY || 'secret',
-        },
       );
 
       if (payload) {
@@ -90,7 +90,14 @@ export class AuthService {
           login,
         };
 
-        return this.generateToken(user as User);
+        const accessToken = await this.generateToken(user as User);
+        await this.timeout(REFRESH_TOKEN_DELAY);
+        const refreshToken = await this.generateToken(user as User);
+
+        return {
+          accessToken,
+          refreshToken,
+        };
       }
     } catch (error) {
       if (
@@ -104,5 +111,9 @@ export class AuthService {
 
       throw new Error();
     }
+  }
+
+  private timeout(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
