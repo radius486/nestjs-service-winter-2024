@@ -19,9 +19,6 @@ import { APP_GUARD } from '@nestjs/core';
     forwardRef(() => UserModule),
     JwtModule.register({
       secret: process.env.PRIVATE_KEY || 'secret',
-      signOptions: {
-        expiresIn: process.env.JWT_EXPIRATION_TIME,
-      },
     }),
   ],
 })

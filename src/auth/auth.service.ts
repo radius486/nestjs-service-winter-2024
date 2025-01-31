@@ -11,10 +11,7 @@ import { ErrorMessages } from 'src/common/constants/error-messages';
 import * as bcrypt from 'bcrypt';
 import { InfoMessages } from 'src/common/constants/info-messages';
 import { RefreshDto } from './dto/refresh.dto';
-import {
-  JWT_ERROR_NAMES,
-  REFRESH_TOKEN_DELAY,
-} from 'src/common/constants/common';
+import { JWT_ERROR_NAMES } from 'src/common/constants/common';
 
 @Injectable()
 export class AuthService {
@@ -25,10 +22,8 @@ export class AuthService {
 
   async login(userDto: LoginDto) {
     const user = await this.validateUser(userDto);
-    const refreshToken = await this.generateToken(user);
-    const accessToken = await this.generateToken(user);
 
-    return { accessToken, refreshToken };
+    return await this.generateTokens(user);
   }
 
   async signup(userDto: SignupDto) {
@@ -39,12 +34,12 @@ export class AuthService {
       password,
     });
 
-    const accessToken = await this.generateToken(user as User);
+    const tokens = await this.generateTokens(user as User);
 
     return {
       message: InfoMessages.userHasBeenSuccessfullyCreated,
       id: user.id,
-      accessToken,
+      ...tokens,
     };
   }
 
@@ -70,10 +65,18 @@ export class AuthService {
     }
   }
 
-  private async generateToken(user: User) {
+  private async generateTokens(user: User) {
     const payload = { login: user.login, userId: user.id };
 
-    return await this.jwtService.signAsync(payload);
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: process.env.TOKEN_EXPIRE_TIME,
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: process.env.TOKEN_REFRESH_EXPIRE_TIME,
+    });
+
+    return { accessToken, refreshToken };
   }
 
   async refresh(refreshDto: RefreshDto) {
@@ -90,14 +93,7 @@ export class AuthService {
           login,
         };
 
-        const accessToken = await this.generateToken(user as User);
-        await this.timeout(REFRESH_TOKEN_DELAY);
-        const refreshToken = await this.generateToken(user as User);
-
-        return {
-          accessToken,
-          refreshToken,
-        };
+        return await this.generateTokens(user as User);
       }
     } catch (error) {
       if (!refreshDto.refreshToken) {
@@ -120,9 +116,5 @@ export class AuthService {
 
       throw new Error();
     }
-  }
-
-  private timeout(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
