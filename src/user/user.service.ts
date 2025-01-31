@@ -88,10 +88,7 @@ export class UserService {
   async updateUserPassword(id: string, dto: UpdatePasswordDto) {
     const user = await this.getUserById(id, true);
 
-    const passwordEquals = await bcrypt.compare(
-      dto.oldPassword,
-      user.password,
-    );
+    const passwordEquals = await bcrypt.compare(dto.oldPassword, user.password);
 
     if (!passwordEquals) {
       throw new HttpException(
