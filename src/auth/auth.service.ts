@@ -67,13 +67,11 @@ export class AuthService {
 
   private async generateTokens(user: User) {
     const payload = { login: user.login, userId: user.id };
-
-    const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: process.env.TOKEN_EXPIRE_TIME,
-    });
+    const accessToken = await this.jwtService.signAsync(payload);
 
     const refreshToken = await this.jwtService.signAsync(payload, {
-      expiresIn: process.env.TOKEN_REFRESH_EXPIRE_TIME,
+      secret: process.env.JWT_SECRET_REFRESH_KEY || 'secret',
+      expiresIn: process.env.TOKEN_REFRESH_EXPIRE_TIME || '24h',
     });
 
     return { accessToken, refreshToken };
@@ -83,6 +81,9 @@ export class AuthService {
     try {
       const payload = await this.jwtService.verifyAsync(
         refreshDto.refreshToken,
+        {
+          secret: process.env.JWT_SECRET_REFRESH_KEY || 'secret',
+        },
       );
 
       if (payload) {
