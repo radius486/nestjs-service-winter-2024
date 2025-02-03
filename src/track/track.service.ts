@@ -1,10 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as uuid from 'uuid';
 import { CreateTrackDto } from './dto/create-track-dto';
-import { ErrorMessages } from 'src/constants/error-messages';
-import { Favorites } from 'src/favorites/favorites.service';
-import { mockedTracks } from 'mocks/track-mocks';
-import { mockedFavorites } from 'mocks/favorites-mocks';
+import { ErrorMessages } from 'src/common/constants/error-messages';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 export type Track = {
   id: string;
@@ -14,24 +12,16 @@ export type Track = {
   duration: number;
 };
 
-const tracks: Track[] = mockedTracks;
-const favorites: Favorites = mockedFavorites;
-
 @Injectable()
 export class TrackService {
+  constructor(private prisma: PrismaService) {}
+
   async getAllTracks() {
-    return tracks;
+    return await this.prisma.track.findMany();
   }
 
   async getTrackById(id: string) {
-    if (!uuid.validate(id)) {
-      throw new HttpException(
-        `trackId ${ErrorMessages.isNotUuid}`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const track = tracks.find((track) => track.id === id);
+    const track = await this.prisma.track.findUnique({ where: { id } });
 
     if (!track) {
       throw new HttpException(
@@ -44,7 +34,7 @@ export class TrackService {
   }
 
   async createTrack(dto: CreateTrackDto) {
-    const track = {
+    const data = {
       id: uuid.v4(),
       name: dto.name,
       artistId: dto.artistId || null,
@@ -52,59 +42,24 @@ export class TrackService {
       duration: dto.duration,
     };
 
-    tracks.push(track);
-
-    return track;
+    return await this.prisma.track.create({ data });
   }
 
   async updateTrackInfo(id: string, dto: CreateTrackDto) {
-    if (!uuid.validate(id)) {
-      throw new HttpException(
-        `trackId ${ErrorMessages.isNotUuid}`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const track = tracks.find((track) => track.id === id);
-
-    if (!track) {
-      throw new HttpException(
-        ErrorMessages.recordDoestExist,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    track.name = dto.name;
-    track.duration = dto.duration;
-    track.albumId = dto.albumId;
-    track.artistId = dto.artistId;
-
-    return track;
+    await this.getTrackById(id);
+    return await this.prisma.track.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        duration: dto.duration,
+        albumId: dto.albumId,
+        artistId: dto.artistId,
+      },
+    });
   }
 
   async deleteTrackById(id: string) {
-    if (!uuid.validate(id)) {
-      throw new HttpException(
-        `trackId ${ErrorMessages.isNotUuid}`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const index = tracks.findIndex((track) => track.id === id);
-
-    if (index === -1) {
-      throw new HttpException(
-        ErrorMessages.recordDoestExist,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    tracks.splice(index, 1);
-
-    const favoriteIndex = favorites.tracks.indexOf(id);
-
-    if (favoriteIndex >= -1) {
-      favorites.tracks.splice(favoriteIndex, 1);
-    }
+    await this.getTrackById(id);
+    await this.prisma.track.delete({ where: { id } });
   }
 }

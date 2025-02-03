@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Param,
   Post,
   Body,
   Put,
@@ -19,9 +18,9 @@ import {
 } from '@nestjs/swagger';
 
 import { AlbumService } from './album.service';
-import { GetAlbumByIdParams } from './params/get-album-by-id-params';
 import { CreateAlbumDto } from './dto/create-album-dto';
-import { albumExample } from 'src/examples/open-api-examples';
+import { albumExample } from 'src/common/examples/open-api-examples';
+import { UUIDParam } from 'src/common/helpers/decorators';
 
 @ApiTags('Albums')
 @Controller('album')
@@ -29,7 +28,7 @@ export class AlbumController {
   constructor(private albumService: AlbumService) {}
 
   @ApiOperation({ summary: 'Get all albums' })
-  @ApiResponse({ status: 200, example: [albumExample] })
+  @ApiResponse({ status: HttpStatus.OK, example: [albumExample] })
   @Get()
   getAllAlbums() {
     return this.albumService.getAllAlbums();
@@ -37,14 +36,14 @@ export class AlbumController {
 
   @ApiOperation({ summary: 'Get album by id' })
   @ApiParam({ name: 'id', example: '495b9ffb-687b-401a-9b10-a1a764e9deca' })
-  @ApiResponse({ status: 200, example: albumExample })
+  @ApiResponse({ status: HttpStatus.OK, example: albumExample })
   @Get(':id')
-  getAlbumById(@Param() params: GetAlbumByIdParams) {
-    return this.albumService.getAlbumById(params.id);
+  getAlbumById(@UUIDParam('id') id: string) {
+    return this.albumService.getAlbumById(id);
   }
 
   @ApiOperation({ summary: 'Create new album' })
-  @ApiResponse({ status: 201, example: albumExample })
+  @ApiResponse({ status: HttpStatus.CREATED, example: albumExample })
   @Post()
   createAlbum(@Body() albumDto: CreateAlbumDto) {
     return this.albumService.createAlbum(albumDto);
@@ -66,21 +65,21 @@ export class AlbumController {
       },
     },
   })
-  @ApiResponse({ status: 200, example: albumExample })
+  @ApiResponse({ status: HttpStatus.OK, example: albumExample })
   @Put(':id')
   updateAlbumInfo(
     @Body() albumDto: CreateAlbumDto,
-    @Param() params: GetAlbumByIdParams,
+    @UUIDParam('id') id: string,
   ) {
-    return this.albumService.updateAlbumInfo(params.id, albumDto);
+    return this.albumService.updateAlbumInfo(id, albumDto);
   }
 
   @ApiOperation({ summary: 'Remove existing album by id' })
   @ApiParam({ name: 'id', example: '0b7f1be2-cd52-4643-8aef-8740b221dc81' })
-  @ApiResponse({ status: 204 })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteAlbumById(@Param() params: GetAlbumByIdParams) {
-    return this.albumService.deleteAlbumById(params.id);
+  deleteAlbumById(@UUIDParam('id') id: string) {
+    return this.albumService.deleteAlbumById(id);
   }
 }

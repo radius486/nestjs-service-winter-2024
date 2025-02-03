@@ -1,0 +1,43 @@
+services:
+  nestjs_api:
+    container_name: nestjs_api
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    depends_on:
+      - nestjs_postgres
+    ports:
+      - '4000:4000'
+    command: npm run start:migrate:dev
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+    networks:
+      - nestjs_network
+    restart: always
+
+  nestjs_postgres:
+    container_name: nestjs_postgres
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    env_file:
+      - .env
+    environment:
+      PG_DATA: /var/lib/postgresql/data
+    ports:
+      - 5432:5432
+      - 5433:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - nestjs_network
+    restart: always
+
+volumes:
+  pgdata:
+
+networks:
+  nestjs_network:
+    driver: bridge

@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Param,
   Post,
   Body,
   Put,
@@ -11,11 +10,11 @@ import {
 } from '@nestjs/common';
 
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetUserByIdParams } from './params/get-user-by-id-params';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdatePasswordDto } from './dto/update-password-dto';
 import { UserService } from './user.service';
-import { userExample } from 'src/examples/open-api-examples';
+import { userExample } from 'src/common/examples/open-api-examples';
+import { UUIDParam } from 'src/common/helpers/decorators';
 
 @ApiTags('Users')
 @Controller('user')
@@ -23,7 +22,7 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, example: [userExample] })
+  @ApiResponse({ status: HttpStatus.OK, example: [userExample] })
   @Get()
   getAllUsers() {
     return this.userService.getAllUsers();
@@ -31,14 +30,14 @@ export class UserController {
 
   @ApiOperation({ summary: 'Get user by id' })
   @ApiParam({ name: 'id', example: 'b2a93819-d28c-465c-9402-a612fec77f85' })
-  @ApiResponse({ status: 200, example: userExample })
+  @ApiResponse({ status: HttpStatus.OK, example: userExample })
   @Get(':id')
-  getUserById(@Param() params: GetUserByIdParams) {
-    return this.userService.getUserById(params.id);
+  getUserById(@UUIDParam('id') id: string) {
+    return this.userService.getUserById(id);
   }
 
   @ApiOperation({ summary: 'Create new user' })
-  @ApiResponse({ status: 201, example: userExample })
+  @ApiResponse({ status: HttpStatus.CREATED, example: userExample })
   @Post()
   createUser(@Body() userDto: CreateUserDto) {
     return this.userService.createUser(userDto);
@@ -46,21 +45,21 @@ export class UserController {
 
   @ApiOperation({ summary: "Update user's password by id" })
   @ApiParam({ name: 'id', example: 'b2a93819-d28c-465c-9402-a612fec77f85' })
-  @ApiResponse({ status: 200, example: userExample })
+  @ApiResponse({ status: HttpStatus.OK, example: userExample })
   @Put(':id')
   updateUserPassword(
     @Body() passwordDto: UpdatePasswordDto,
-    @Param() params: GetUserByIdParams,
+    @UUIDParam('id') id: string,
   ) {
-    return this.userService.updateUserPassword(params.id, passwordDto);
+    return this.userService.updateUserPassword(id, passwordDto);
   }
 
   @ApiOperation({ summary: 'Remove existing user by id' })
   @ApiParam({ name: 'id', example: 'b2a93819-d28c-465c-9402-a612fec77f85' })
-  @ApiResponse({ status: 204 })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteUserById(@Param() params: GetUserByIdParams) {
-    return this.userService.deleteUserById(params.id);
+  deleteUserById(@UUIDParam('id') id: string) {
+    return this.userService.deleteUserById(id);
   }
 }

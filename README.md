@@ -11,16 +11,10 @@
 git clone {repository URL}
 ```
 
-## Installing NPM modules
+## Running application inside docker container with postgres DB
 
 ```
-npm install --legacy-peer-deps
-```
-
-## Running application
-
-```
-npm start
+docker-compose up
 ```
 
 After starting the app on port (4000 as default) you can open

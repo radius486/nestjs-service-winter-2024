@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Param,
   Post,
   Body,
   Put,
@@ -19,9 +18,9 @@ import {
 } from '@nestjs/swagger';
 
 import { TrackService } from './track.service';
-import { GetTrackByIdParams } from './params/get-track-by-id-params';
 import { CreateTrackDto } from './dto/create-track-dto';
-import { trackExample } from 'src/examples/open-api-examples';
+import { trackExample } from 'src/common/examples/open-api-examples';
+import { UUIDParam } from 'src/common/helpers/decorators';
 
 @ApiTags('Tracks')
 @Controller('track')
@@ -29,7 +28,7 @@ export class TrackController {
   constructor(private trackService: TrackService) {}
 
   @ApiOperation({ summary: 'Get all tracks' })
-  @ApiResponse({ status: 200, example: [trackExample] })
+  @ApiResponse({ status: HttpStatus.OK, example: [trackExample] })
   @Get()
   getAllTracks() {
     return this.trackService.getAllTracks();
@@ -37,14 +36,14 @@ export class TrackController {
 
   @ApiOperation({ summary: 'Get track by id' })
   @ApiParam({ name: 'id', example: '6cd3cdca-b31e-4911-8c22-9d08c42b01b4' })
-  @ApiResponse({ status: 200, example: trackExample })
+  @ApiResponse({ status: HttpStatus.OK, example: trackExample })
   @Get(':id')
-  getTrackById(@Param() params: GetTrackByIdParams) {
-    return this.trackService.getTrackById(params.id);
+  getTrackById(@UUIDParam('id') id: string) {
+    return this.trackService.getTrackById(id);
   }
 
   @ApiOperation({ summary: 'Create new track' })
-  @ApiResponse({ status: 201, example: trackExample })
+  @ApiResponse({ status: HttpStatus.CREATED, example: trackExample })
   @Post()
   createTrack(@Body() trackDto: CreateTrackDto) {
     return this.trackService.createTrack(trackDto);
@@ -70,21 +69,21 @@ export class TrackController {
       },
     },
   })
-  @ApiResponse({ status: 200, example: trackExample })
+  @ApiResponse({ status: HttpStatus.OK, example: trackExample })
   @Put(':id')
   updateTrackInfo(
     @Body() trackDto: CreateTrackDto,
-    @Param() params: GetTrackByIdParams,
+    @UUIDParam('id') id: string,
   ) {
-    return this.trackService.updateTrackInfo(params.id, trackDto);
+    return this.trackService.updateTrackInfo(id, trackDto);
   }
 
   @ApiOperation({ summary: 'Remove existing track by id' })
   @ApiParam({ name: 'id', example: '66b3d77f-6238-4f2d-ba6f-b3697e03b5aa' })
-  @ApiResponse({ status: 204 })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  deleteTrackById(@Param() params: GetTrackByIdParams) {
-    return this.trackService.deleteTrackById(params.id);
+  deleteTrackById(@UUIDParam('id') id: string) {
+    return this.trackService.deleteTrackById(id);
   }
 }
