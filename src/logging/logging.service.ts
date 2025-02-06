@@ -4,6 +4,7 @@ import { ResponseBody } from 'src/common/exception-filters/common-exception.filt
 import * as fs from 'fs';
 import {
   LOG_DIRECTORY_PATH,
+  LOG_LEVEL,
   LOG_PATH,
   LOG_TYPE,
 } from 'src/common/constants/common';
@@ -11,6 +12,10 @@ import {
 @Injectable({ scope: Scope.TRANSIENT })
 export class LoggingService extends ConsoleLogger {
   logInfo(req: Request, res: Response) {
+    if (this.checkLoggingLevel(LOG_LEVEL.LOG)) {
+      return;
+    }
+
     const { method, originalUrl: url, body, query } = req;
     const reqTime = new Date().getTime();
 
@@ -32,12 +37,16 @@ export class LoggingService extends ConsoleLogger {
       ) {
         const message = `[LoggingService] ${method}: ${url}${bodyString}${queryString} ${statusCode} ${timeString}`;
         this.log(message);
-        this.writeLog(message, LOG_TYPE.INFO);
+        this.writeLog(message, LOG_TYPE.LOG);
       }
     });
   }
 
   logError(responseBody: ResponseBody) {
+    if (this.checkLoggingLevel(LOG_LEVEL.ERROR)) {
+      return;
+    }
+
     const { method, statusCode, path } = responseBody;
     const message = `[LoggingService] ${method}: ${path} ${statusCode}`;
 
@@ -45,9 +54,18 @@ export class LoggingService extends ConsoleLogger {
     this.writeLog(message, LOG_TYPE.ERROR);
   }
 
+  logWarning(message: string) {
+    if (this.checkLoggingLevel(LOG_LEVEL.WARNING)) {
+      return;
+    }
+
+    this.warn(message);
+    this.writeLog(`[LoggingService] ${message}`, LOG_TYPE.WARNING);
+  }
+
   private writeLog(message: string, type: LOG_TYPE) {
     const date = new Date().toLocaleString();
-    const path = type === LOG_TYPE.ERROR ? LOG_PATH.ERROR : LOG_PATH.INFO;
+    const path = LOG_PATH[type];
 
     if (!fs.existsSync(LOG_DIRECTORY_PATH)) {
       fs.mkdirSync(LOG_DIRECTORY_PATH);
@@ -72,5 +90,9 @@ export class LoggingService extends ConsoleLogger {
 
       fs.writeFileSync(path, newCsvContent);
     }
+  }
+
+  private checkLoggingLevel(logLevel: LOG_LEVEL) {
+    return logLevel > Number(process.env.LOG_LEVEL);
   }
 }

@@ -13,11 +13,19 @@ export enum JWT_ERROR_NAMES {
 export const LOG_DIRECTORY_PATH = './src/logging/logs/';
 
 export enum LOG_PATH {
-  INFO = './src/logging/logs/info.csv',
+  LOG = './src/logging/logs/log.csv',
   ERROR = './src/logging/logs/error.csv',
+  WARNING = './src/logging/logs/warning.csv',
 }
 
 export enum LOG_TYPE {
-  INFO = 'INFO',
+  LOG = 'LOG',
   ERROR = 'ERROR',
+  WARNING = 'WARNING',
+}
+
+export enum LOG_LEVEL {
+  ERROR = 0,
+  WARNING = 1,
+  LOG = 2,
 }
