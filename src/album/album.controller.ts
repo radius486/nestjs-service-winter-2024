@@ -20,7 +20,7 @@ import {
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album-dto';
 import { albumExample } from 'src/common/examples/open-api-examples';
-import { UUIDParam } from 'src/common/helpers/decorators';
+import { UUIDParam } from 'src/common/decorators/uuid.decorators';
 
 @ApiTags('Albums')
 @Controller('album')

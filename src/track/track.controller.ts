@@ -20,7 +20,7 @@ import {
 import { TrackService } from './track.service';
 import { CreateTrackDto } from './dto/create-track-dto';
 import { trackExample } from 'src/common/examples/open-api-examples';
-import { UUIDParam } from 'src/common/helpers/decorators';
+import { UUIDParam } from 'src/common/decorators/uuid.decorators';
 
 @ApiTags('Tracks')
 @Controller('track')

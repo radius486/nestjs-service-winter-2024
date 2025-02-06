@@ -11,6 +11,7 @@ export class CreateTrackDto {
   @IsNotEmpty({ message: `name ${ErrorMessages.shouldNotBeEmpty}` })
   @IsString({ message: `name ${ErrorMessages.shouldBeString}` })
   readonly name: string;
+
   @ApiProperty({
     example: null,
     description: 'Artist id',
@@ -19,6 +20,7 @@ export class CreateTrackDto {
   @IsString({ message: `artistId ${ErrorMessages.shouldBeString}` })
   @IsOptional()
   readonly artistId: string | null;
+
   @ApiProperty({
     example: null,
     description: 'Album id',
@@ -27,6 +29,7 @@ export class CreateTrackDto {
   @IsString({ message: `albumId ${ErrorMessages.shouldBeString}` })
   @IsOptional()
   readonly albumId: string | null;
+
   @ApiProperty({
     example: 80,
     description: 'Track duration',

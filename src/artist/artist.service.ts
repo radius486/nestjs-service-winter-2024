@@ -21,8 +21,6 @@ export class ArtistService {
   async getArtistById(id: string) {
     const artist = await this.prisma.artist.findUnique({ where: { id } });
 
-    console.log(artist);
-
     if (!artist) {
       throw new HttpException(
         ErrorMessages.recordDoestExist,
